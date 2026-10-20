@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O‘ZBEKISTON KELAJAGI</title>
+<style>
+:root{--bg:#050a1a;--gold:#e5c066;--blue:#6cc4ff;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.14);--t:#eef3ff}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--t);min-height:100vh;
+background:radial-gradient(900px 500px at 70% -10%,#12307a55,transparent),radial-gradient(700px 500px at 0 100%,#0a1f4d66,transparent),var(--bg)}
+nav{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 5vw;backdrop-filter:blur(14px);background:#050a1acc;border-bottom:1px solid var(--line)}
+.logo{font-weight:800;letter-spacing:.15em;color:var(--gold)}
+button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);color:var(--t);background:var(--card);padding:10px 18px;font-weight:600;transition:.2s}
+button:hover{transform:translateY(-2px);border-color:var(--gold)}button.pri{background:linear-gradient(135deg,#e5c066,#b88a2c);color:#1a1200;border:0}
+button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+section{padding:40px 5vw;max-width:1150px;margin:auto;animation:in .6s ease}@keyframes in{from{opacity:0;transform:translateY(14px)}}
+.hero{text-align:center}.hero h1{font-size:clamp(2.2rem,8vw,5rem);margin:.2em 0;letter-spacing:.08em;background:linear-gradient(90deg,#fff,var(--gold),var(--blue));-webkit-background-clip:text;color:transparent}
+.hero h2{font-weight:400;color:var(--blue)}.hero p{opacity:.8;max-width:620px;margin:8px auto}
+#map{width:min(100%,640px);margin:20px auto;filter:drop-shadow(0 18px 24px #000a) drop-shadow(0 0 20px #3a8dff44)}
+#map path{fill:#16336e;stroke:#9cc9ff;stroke-width:.6;transition:.2s}#map path:hover{fill:#e5c066aa}
+#tip{height:1.5em;color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:12px}
+.c1{background:linear-gradient(160deg,#1c6fd033,#fff1)}.c2{background:linear-gradient(160deg,#0f6b4a44,#e5c06622)}.c3{background:linear-gradient(160deg,#7a45d044,#c9d1e022)}
+.ico{font-size:2.6rem}.card p{flex:1;font-size:.93rem;opacity:.88;line-height:1.5}
+.note{font-size:.85rem;opacity:.7;text-align:center;margin-top:14px}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:20;padding:16px;overflow:auto}
+.modal.on{display:flex}.box{background:#0b1430;border:1px solid var(--line);border-radius:20px;padding:26px;max-width:560px;width:100%;text-align:center}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0006;color:var(--t);font:inherit;margin:10px 0}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,80px);background:var(--gold);color:#1a1200;padding:12px 22px;border-radius:30px;font-weight:700;transition:.3s;z-index:40}
+#toast.on{transform:translate(-50%,0)}#toast.err{background:#ff6b6b;color:#fff}
+.big{font-size:clamp(2rem,6vw,3.4rem);font-weight:800;color:var(--gold)}
+.bar{height:10px;border-radius:6px;background:#fff2;overflow:hidden}.bar i{display:block;height:100%;transition:width 1s}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;align-items:start}
+.cw{position:relative;max-width:380px;margin:auto}.ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;font-weight:800}
+.win{border:2px solid var(--gold);box-shadow:0 0 30px #e5c06655}#adm.full{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;max-width:none}
+.ok{font-size:4rem;animation:pop .6s}@keyframes pop{from{transform:scale(0)}}
+</style></head><body>
+<nav><div class="logo">O‘ZBEKISTON KELAJAGI</div><div class="row" style="margin:0">
+<button class="pri" onclick="go('vote')">OVOZ BERISH</button><button onclick="openLogin()">NATIJANI TEKSHIRISH</button></div></nav>
+
+<section id="home" class="hero"><h1>O‘ZBEKISTON KELAJAGI</h1><h2>Jamiyat taraqqiyotining qaysi yo‘lini tanlaysiz?</h2>
+<p>Sizning fikringiz muhim. Tanlovingizni bildiring va umumiy natijalarga o‘z hissangizni qo‘shing.</p>
+<svg id="map" viewBox="0 0 600 400"><text x="300" y="200" fill="#9cc9ff" text-anchor="middle">Xarita yuklanmoqda…</text></svg><div id="tip">&nbsp;</div>
+<button class="pri" onclick="go('vote')">OVOZ BERISHGA O‘TISH</button></section>
+
+<section id="vote"><h2 style="text-align:center">SIZ QAYSI YO‘LNI TANLAYSIZ?</h2>
+<p class="note" style="font-size:1rem">Quyidagi uchta variantni o‘rganing va o‘z qarashingizga mos tanlovni belgilang. Bu o‘quv simulyatsiyasi bo‘lib, variantlar bo‘yicha fikrlar o‘rganiladi.</p>
+<div id="status" class="note"></div>
+<div class="grid" id="opts">
+<div class="card c1"><div class="ico">🏛️⚖️</div><h3>DUNYOVIY DAVLAT</h3><p>Davlat boshqaruvi diniy tashkilotlardan ajratiladi. Qonunlar dunyoviy huquqiy tamoyillarga asoslanadi, fuqarolarning vijdon erkinligi va turli e'tiqod vakillarining huquqlarini ta'minlash ko‘zda tutiladi.</p><button class="pri" onclick="pick(1)">DUNYOVIY YO‘LNI TANLAYMAN</button></div>
+<div class="card c2"><div class="ico">🕌✨</div><h3>DINIY QADRIYATLARGA ASOSLANGAN DAVLAT</h3><p>Diniy qadriyatlar va e'tiqodga asoslangan tamoyillar davlat siyosati va jamiyat hayotida muhim o‘rin tutadi. Bunday modelda qonunchilik va fuqarolarning huquqlari qanday belgilanishi davlatning muayyan tizimiga bog‘liq.</p><button class="pri" onclick="pick(2)">DINIY QADRIYATLAR YO‘LINI TANLAYMAN</button></div>
+<div class="card c3"><div class="ico">🔷🤝</div><h3>UMUMIY SIYOSIY MAFKURAGA ASOSLANGAN DAVLAT</h3><p>Davlat siyosati jamiyatni birlashtiruvchi muayyan siyosiy mafkura, umumiy g‘oya va taraqqiyot maqsadlariga asoslanadi. Bunday yondashuvning natijalari mafkuraning mazmuni va siyosiy tizimga bog‘liq.</p><button class="pri" onclick="pick(3)">UMUMIY MAFKURA YO‘LINI TANLAYMAN</button></div></div>
+<div class="row"><button onclick="pick(4)">OVOZ BERMAYMAN</button></div>
+<p class="note">Variantlar real davlatlarning mukammal tavsifi emas, balki muhokama uchun soddalashtirilgan konseptual modellardir.</p></section>
+
+<div class="modal" id="m-conf"><div class="box"><h3>Siz ushbu variantni tanladingiz.</h3><p id="cname" class="big" style="font-size:1.3rem"></p><p id="cabs" style="display:none">Siz ovoz bermaslikni tanladingiz. Bu tanlov ham umumiy statistikada alohida hisoblanadi.</p><p>Tanlovingizni tasdiqlaysizmi?</p>
+<div class="row"><button class="pri" id="btnOk" onclick="confirmVote()">TASDIQLASH</button><button onclick="closeM('m-conf')">ORTGA QAYTISH</button></div></div></div>
+
+<div class="modal" id="m-done"><div class="box"><div class="ok">✅</div><h3>TANLOVINGIZ QABUL QILINDI!</h3><p>Sizning fikringiz umumiy natijalarni shakllantirishga hissa qo‘shdi.</p>
+<button class="pri" onclick="copyReceipt()">NATIJANI NUSXALASH</button><div class="row"><button onclick="closeM('m-done')">YOPISH</button></div></div></div>
+
+<div class="modal" id="m-login"><div class="box"><h3>MAXFIY BOSHQARUV PANELI</h3><p>Bu bo‘lim faqat vakolatli boshqaruvchi uchun mo‘ljallangan.</p>
+<input id="pw" type="password" placeholder="Maxfiy kirish kodi" onkeydown="if(event.key==='Enter')login()"><div id="lerr" style="color:#ff8a8a"></div>
+<div class="row"><button class="pri" onclick="login()">KIRISH</button><button onclick="closeM('m-login')">YOPISH</button></div></div></div>
+
+<div class="modal" id="m-copy"><div class="box"><h3>Matnni qo‘lda nusxalang</h3><textarea id="ctext" rows="12" readonly></textarea><button onclick="closeM('m-copy')">YOPISH</button></div></div>
+
+<section id="adm" style="display:none"><div class="row" style="justify-content:space-between;margin:0 0 14px">
+<div class="big" id="total">JAMI OVOZLAR: 0</div><div class="row" style="margin:0">
+<button class="pri" onclick="showResult()">NATIJANI KO‘RSATISH</button><button onclick="fs()">TO‘LIQ EKRAN</button><button onclick="logout()">CHIQISH</button></div></div>
+<div id="live" class="note">Ulanmoqda…</div>
+<div class="dash"><div class="card" id="chartCard"><div class="cw"><canvas id="ch"></canvas><div class="ctr"><span>JAMI</span><span id="cc" class="big" style="font-size:2rem">0</span><span>OVOZ</span></div></div></div>
+<div class="card" id="stats"></div></div>
+<div class="card" id="winner" style="margin:18px 0;text-align:center"></div>
+<div class="card"><h3>OVOZLAR VA TASDIQLAR</h3><div id="info"></div>
+<div class="row"><input id="fc" placeholder="Tasdiq kodini qidirish" style="max-width:260px;margin:0"><button onclick="findCode()">QIDIRISH</button></div><div id="fres"></div></div>
+<div class="row"><button class="pri" onclick="copyAll()">BARCHA NATIJALARNI NUSXALASH</button><button onclick="copyCodes()">BARCHA TASDIQ KODLARINI NUSXALASH</button>
+<button onclick="dl('txt')">TXT YUKLASH</button><button onclick="dl('csv')">CSV YUKLASH</button><button onclick="dl('pdf')">PDF YUKLASH</button></div></section>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// ====== SOZLAMA: Supabase > Project Settings > API dan oling ======
+const SUPABASE_URL="YOUR_SUPABASE_URL", SUPABASE_KEY="YOUR_SUPABASE_ANON_KEY";
+// ==================================================================
+const N=["","Dunyoviy davlat","Diniy qadriyatlarga asoslangan davlat","Umumiy siyosiy mafkuraga asoslangan davlat","Ovoz bermayman"];
+const COL=["","#4aa3ff","#e5c066","#a77bff","#8d98aa"],ICO=["","🏛️","🕌","🔷","⚪"];
+const $=id=>document.getElementById(id);
+const configured=!SUPABASE_URL.startsWith("YOUR_");
+const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+let choice=0,adminTok=null,chart=null,timer=null,data=null,popped=false;
+function toast(m,e){const t=$("toast");t.textContent=m;t.className="on"+(e?" err":"");setTimeout(()=>t.className="",2600)}
+function go(id){$(id).scrollIntoView({behavior:"smooth"})}
+function openM(id){$(id).classList.add("on")}function closeM(id){$(id).classList.remove("on")}
+const errTxt=e=>{const m=(e&&e.message)||"";return m.includes("TOKEN_USED")?"Bir martalik token allaqachon ishlatilgan.":m.includes("LOCKED")?"Juda ko‘p noto‘g‘ri urinish. 10 daqiqadan so‘ng qayta urining.":m.includes("BAD_PASSWORD")?"Maxfiy kod noto‘g‘ri.":m.includes("AUTH")?"Sessiya tugadi. Qayta kiring.":"Xatolik yuz berdi."};
+function pct(n,t){return t>0?(n/t*100):0}
+// ---- foydalanuvchi holati
+function refreshStatus(){const done=localStorage.getItem("uk_done");$("status").textContent=!configured?"⚠️ Server sozlanmagan (README ga qarang).":!navigator.onLine?"Internet bilan aloqa uzildi.":done?"Siz allaqachon ovoz berdingiz. Ovoz berish yakunlandi.":"";
+document.querySelectorAll("#opts button,#vote .row button").forEach(b=>b.disabled=!configured||!!done)}
+addEventListener("online",refreshStatus);addEventListener("offline",refreshStatus);
+function pick(c){choice=c;$("cname").textContent=N[c];$("cabs").style.display=c==4?"block":"none";openM("m-conf")}
+async function confirmVote(){
+  const b=$("btnOk");b.disabled=true;
+  try{
+    let t=localStorage.getItem("uk_token");
+    if(!t){const r=await sb.rpc("issue_token");if(r.error)throw r.error;t=r.data;localStorage.setItem("uk_token",t)}
+    const r=await sb.rpc("cast_vote",{p_token:t,p_choice:choice});if(r.error)throw r.error;
+    localStorage.setItem("uk_done","1");localStorage.setItem("uk_code",r.data);
+    closeM("m-conf");openM("m-done");refreshStatus();
+  }catch(e){if((e.message||"").includes("TOKEN_USED"))localStorage.setItem("uk_done","1");
+    closeM("m-conf");toast(errTxt(e)+" Ovoz qabul QILINMADI.",1);refreshStatus()}
+  b.disabled=false}
+async function copyText(txt,msg){try{await navigator.clipboard.writeText(txt);toast(msg)}catch{$("ctext").value=txt;openM("m-copy");$("ctext").select()}}
+function copyReceipt(){const c=localStorage.getItem("uk_code");if(!c)return toast("Kod topilmadi",1);
+  copyText(`O‘ZBEKISTON KELAJAGI — OVOZ BERISH TASDIG‘I\n\nTasdiq kodi: ${c}\n\nHolat: Ovoz muvaffaqiyatli qayd etildi.\n\nBu kod faqat ovoz qabul qilinganini tasdiqlaydi. U shaxsiy ovoz tanlovini oshkor qilmaydi.\n\nUshbu tasdiqni taqdimot guruhiga yuboring.`,"NUSXALANDI")}
+// ---- admin
+function openLogin(){if(adminTok)return showAdmin();$("lerr").textContent="";$("pw").value="";openM("m-login");setTimeout(()=>$("pw").focus(),50)}
+async function login(){if(!configured)return $("lerr").textContent="Server sozlanmagan.";
+  const r=await sb.rpc("admin_login",{pw:$("pw").value});
+  if(r.error)return $("lerr").textContent=errTxt(r.error);
+  adminTok=r.data;closeM("m-login");toast("Boshqaruv paneliga kirish muvaffaqiyatli!");showAdmin()}
+function showAdmin(){$("adm").style.display="block";$("adm").className="";go("adm");poll();timer=setInterval(poll,4000)}
+function logout(){adminTok=null;clearInterval(timer);$("adm").style.display="none";if(document.fullscreenElement)document.exitFullscreen();go("home")}
+async function poll(){const r=await sb.rpc("admin_stats",{t:adminTok});
+  if(r.error){$("live").textContent="⚠️ Yangilanishda xatolik: "+errTxt(r.error);if((r.error.message||"").includes("AUTH"))logout();return}
+  data=r.data;$("live").textContent="🟢 Jonli • server vaqti: "+new Date(data.server_time).toLocaleString("uz-UZ");render()}
+function winnerOf(){const c=data.counts,t=data.total;if(!t)return null;let m=0;for(let i=1;i<=3;i++)m=Math.max(m,c[i]);
+  if(!m)return null;const w=[1,2,3].filter(i=>c[i]===m);return w}
+function render(){const c=data.counts,t=data.total;$("total").textContent="JAMI OVOZLAR: "+t;$("cc").textContent=t;
+  $("stats").innerHTML=t==0?"<p>Ovozlar hali mavjud emas.</p>":"";if(t>0||true){$("stats").innerHTML=(t==0?"<p>Ovozlar hali mavjud emas.</p>":"")+[1,2,3,4].map(i=>`<div><div style="display:flex;justify-content:space-between"><b>${ICO[i]} ${N[i]}</b><span>${c[i]} ta • ${pct(c[i],t).toFixed(1)}%</span></div><div class="bar"><i style="width:${pct(c[i],t)}%;background:${COL[i]}"></i></div></div>`).join("")}
+  const w=winnerOf(),el=$("winner");
+  el.className="card"+(w&&w.length==1?" win":"");
+  el.innerHTML=!t?"Hali ovoz berilmagan — g‘olib ko‘rsatilmaydi.":!w?"Uchta model bo‘yicha ovoz yo‘q.":w.length>1?"<div class='big'>DURANG — BIR NECHTA VARIANT TENG NATIJA QAYD ETDI</div>"+w.map(i=>N[i]).join(" • "):`<div>ENG KO‘P TANLANGAN VARIANT</div><div class="big">${N[w[0]]}</div><div>${c[w[0]]} ovoz • ${pct(c[w[0]],t).toFixed(1)}%</div>`;
+  if(t)el.innerHTML+=`<p class="note">Bu natija faqat ishtirokchilar fikrini ifodalaydi. “Ovoz bermayman” (${c[4]} ta) alohida statistika sifatida hisoblanadi.</p>`;
+  $("info").innerHTML=`<p>Jami qayd etilgan ovozlar: <b>${t}</b> • Yaratilgan tasdiq kodlari: <b>${data.receipts}</b></p><p class="note" style="text-align:left">Oxirgi ovozlar: ${data.last.map(v=>`#${v.id} (${new Date(v.created_at).toLocaleTimeString("uz-UZ")})`).join(", ")||"yo‘q"}</p>`;
+  const vals=[1,2,3,4].map(i=>c[i]);
+  if(!chart)chart=new Chart($("ch"),{type:"doughnut",data:{labels:N.slice(1),datasets:[{data:vals,backgroundColor:COL.slice(1),borderWidth:0}]},options:{cutout:"68%",animation:{duration:1200},plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>` ${x.label}: ${x.raw} ta (${pct(x.raw,t).toFixed(1)}%)`}}}}});
+  else{chart.data.datasets[0].data=vals;chart.update()}}
+function showResult(){chart.destroy();chart=null;render();$("chartCard").scrollIntoView({behavior:"smooth"});toast("Natija ko‘rsatildi")}
+function fs(){const a=$("adm");a.classList.add("full");a.requestFullscreen&&a.requestFullscreen().catch(()=>{});
+  document.onfullscreenchange=()=>{if(!document.fullscreenElement)a.classList.remove("full")}}
+async function fresh(){const r=await sb.rpc("admin_stats",{t:adminTok});if(r.error)throw r.error;data=r.data;render();return r.data}
+function summary(d){const t=d.total,c=d.counts,w=winnerOf();
+  return `O‘ZBEKISTON KELAJAGI — OVOZ BERISH NATIJALARI\nJami ishtirokchilar: ${t}\n\n`+[1,2,3,4].map(i=>`${i}. ${N[i]} — ${c[i]} ta ovoz (${pct(c[i],t).toFixed(1)}%)`).join("\n")+
+  `\n\nEng ko‘p tanlangan variant: ${!w?"aniqlanmadi":w.length>1?"durang ("+w.map(i=>N[i]).join(", ")+")":N[w[0]]}.\nNatijalar shakllantirilgan sana va vaqt: ${new Date(d.server_time).toLocaleString("uz-UZ")} (server vaqti)`}
+async function copyAll(){try{copyText(summary(await fresh()),"Barcha natijalar nusxalandi!")}catch(e){toast(errTxt(e),1)}}
+async function copyCodes(){const r=await sb.rpc("admin_codes",{t:adminTok});if(r.error)return toast(errTxt(r.error),1);copyText(r.data||"(kodlar yo‘q)","Barcha tasdiq kodlari nusxalandi!")}
+async function findCode(){const r=await sb.rpc("admin_find",{t:adminTok,c:$("fc").value});$("fres").textContent=r.error?errTxt(r.error):r.data?"✅ Kod haqiqiy va bitta ovozga bog‘langan.":"❌ Bunday kod topilmadi."}
+function save(name,mime,txt){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:mime}));a.download=name;a.click()}
+async function dl(f){try{const d=await fresh(),t=d.total;
+  if(f=="txt")save("natijalar.txt","text/plain",summary(d));
+  else if(f=="csv")save("statistika.csv","text/csv","\uFEFFvariant,ovozlar,foiz\n"+[1,2,3,4].map(i=>`"${N[i]}",${d.counts[i]},${pct(d.counts[i],t).toFixed(1)}`).join("\n"));
+  else{const doc=new jspdf.jsPDF();doc.setFontSize(14);doc.text(summary(d).replace(/[‘’]/g,"'").replace(/—/g,"-").split("\n").flatMap(l=>doc.splitTextToSize(l,180)),14,20);
+    const img=$("ch").toDataURL("image/png");doc.addImage(img,"PNG",55,100,100,100);doc.save("natijalar.pdf")}
+  toast("Fayl yuklandi")}catch(e){toast(errTxt(e),1)}}
+// ---- xarita: uz.geojson (viloyatlar chegaralari bilan) mavjud bo'lsa chiziladi
+fetch("uz.geojson").then(r=>r.json()).then(g=>{const pts=[];const walk=c=>typeof c[0]=="number"?pts.push(c):c.forEach(walk);g.features.forEach(f=>walk(f.geometry.coordinates));
+  const lo=Math.min(...pts.map(p=>p[0])),hi=Math.max(...pts.map(p=>p[0])),la0=Math.min(...pts.map(p=>p[1])),la1=Math.max(...pts.map(p=>p[1]));
+  const k=Math.cos((la0+la1)/2*Math.PI/180),s=Math.min(560/((hi-lo)*k),360/(la1-la0));
+  const P=([x,y])=>`${(20+(x-lo)*k*s).toFixed(1)},${(380-(y-la0)*s).toFixed(1)}`;
+  const ring=r=>"M"+r.map(P).join("L")+"Z";
+  $("map").innerHTML=g.features.map(f=>{const G=f.geometry,polys=G.type=="Polygon"?[G.coordinates]:G.coordinates;
+    const nm=(f.properties.shapeName||f.properties.name||"").replace(/"/g,"");
+    return `<path data-n="${nm}" d="${polys.map(p=>p.map(ring).join("")).join("")}"/>`}).join("");
+  $("map").onmouseover=e=>{if(e.target.dataset.n!==undefined)$("tip").textContent=e.target.dataset.n};
+}).catch(()=>{$("map").innerHTML='<text x="300" y="190" fill="#9cc9ff" text-anchor="middle" font-size="16">Xarita uchun uz.geojson faylini qo‘shing</text><text x="300" y="215" fill="#9cc9ff" text-anchor="middle" font-size="12">(README, 6-bo‘lim)</text>'});
+refreshStatus();
+</script></body></html>
